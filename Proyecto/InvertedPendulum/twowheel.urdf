@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<robot name="chasis">
+    <link name="robot_base">
+        <inertial>
+            <origin xyz="0.000000 0.000000 0.100000" rpy="-3.141593 3.141593 -3.141593" />
+            <inertia ixz="0.0" ixx="0.0016666666666667" ixy="0.0" iyy="0.0016666666666667" iyz="0.0" izz="0.0016666666666667" />
+            <mass value="1.0" />
+        </inertial>
+        <collision name="chasis">
+            <origin xyz="0.000000 0.000000 0.100000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <box size="0.200000 0.100000 0.100000" />
+            </geometry>
+        </collision>
+        <visual name="chasis">
+            <origin xyz="0.000000 0.000000 0.100000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <box size="0.200000 0.100000 0.100000" />
+            </geometry>
+            <material name="robot_base_material">
+                <color rgba="0.000000 0.850000 1.000000 1.0" />
+            </material>
+        </visual>
+    </link>
+    <joint name="r_join" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="robot_base" />
+        <child link="r_wheel" />
+        <origin xyz="0.095000 0.000000 0.050000" rpy="0.000000 1.570796 0.000000" />
+        <limit effort="100" lower="0" upper="6.28" velocity="10" />
+    </joint>
+    <link name="r_wheel">
+        <inertial>
+            <origin xyz="0.000000 0.000000 0.050000" rpy="-3.141593 3.141593 -3.141593" />
+            <inertia ixz="0.0" ixx="0.0042542400517365" ixy="0.0" iyy="0.0042542400517365" iyz="0.0" izz="0.007853981633975" />
+            <mass value="2" />
+        </inertial>
+        <collision name="r_wheel">
+            <origin xyz="0.000000 0.000000 0.050000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <cylinder length="0.05" radius="0.1" />
+            </geometry>
+        </collision>
+        <visual name="r_wheel">
+            <origin xyz="0.000000 0.000000 0.050000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <cylinder length="0.05" radius="0.1" />
+            </geometry>
+            <material name="r_wheel_material">
+                <color rgba="0.000000 0.000000 0.000000 1.0" />
+            </material>
+        </visual>
+    </link>
+    <joint name="l_join" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="robot_base" />
+        <child link="l_wheel" />
+        <origin xyz="-0.095000 0.000000 0.050000" rpy="0.000000 -1.570796 0.000000" />
+        <limit effort="100" lower="0" upper="6.28" velocity="10" />
+    </joint>
+    <link name="l_wheel">
+        <inertial>
+            <origin xyz="0.000000 0.000000 0.050000" rpy="-3.141593 3.141593 -3.141593" />
+            <inertia ixz="0.0" ixx="0.0042542400517365" ixy="0.0" iyy="0.0042542400517365" iyz="0.0" izz="0.007853981633975" />
+            <mass value="2" />
+        </inertial>
+        <collision name="l_wheel">
+            <origin xyz="0.000000 0.000000 0.050000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <cylinder length="0.05" radius="0.1" />
+            </geometry>
+        </collision>
+        <visual name="l_wheel">
+            <origin xyz="0.000000 0.000000 0.050000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <cylinder length="0.05" radius="0.1" />
+            </geometry>
+            <material name="l_wheel_material">
+                <color rgba="0.000000 0.000000 0.000000 1.0" />
+            </material>
+        </visual>
+    </link>
+    <joint name="Revolute_joint" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="robot_base" />
+        <child link="Cylinder" />
+        <origin xyz="0.000000 0.000000 0.150000" rpy="-3.141593 3.141593 -3.141593" />
+    </joint>
+    <link name="Cylinder">
+        <inertial>
+            <origin xyz="0.000000 -0.000000 0.100000" rpy="-3.141593 3.141593 -3.141593" />
+            <inertia ixz="0.0" ixx="0.0011453723216214" ixy="0.0" iyy="0.0011453723216214" iyz="0.0" izz="0.00098174770424688" />
+            <mass value="3" />
+        </inertial>
+        <collision name="Cylinder">
+            <origin xyz="0.000000 -0.000000 0.100000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <cylinder length="0.2" radius="0.05" />
+            </geometry>
+        </collision>
+        <visual name="Cylinder">
+            <origin xyz="0.000000 -0.000000 0.100000" rpy="-3.141593 3.141593 -3.141593" />
+            <geometry>
+                <cylinder length="0.2" radius="0.05" />
+            </geometry>
+            <material name="Cylinder_material">
+                <color rgba="1.000000 0.000000 0.000000 1.0" />
+            </material>
+        </visual>
+    </link>
+</robot>
