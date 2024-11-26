@@ -10,8 +10,8 @@
 #define PIN_BIN1        27
 #define PIN_BIN2        14
 
-#define  CH_PWM_AIN1    0
-#define  CH_PWM_AIN2    1
+#define CH_PWM_AIN1     0
+#define CH_PWM_AIN2     1
 
 #define  CH_PWM_BIN1    2
 #define  CH_PWM_BIN2    3
@@ -21,6 +21,9 @@
 #define CH_ENC_B1       32
 #define CH_ENC_A2       34
 #define CH_ENC_B2       35
+
+// IMU
+#define MPU9250_ADDR 0x68
 
 
 // Cores configuration

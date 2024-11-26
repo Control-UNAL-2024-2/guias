@@ -3,14 +3,14 @@
 #include <ESP32Encoder.h>
 #include <Adafruit_BNO055.h>
 #include <Wire.h>
-#include "MPU9250.h"
+#include <MPU9250_WE.h>
 
 // Encoders
 ESP32Encoder encoderMotorA;
 ESP32Encoder encoderMotorB;
 
 // IMU
-MPU9250 IMU;
+MPU9250_WE myMPU9250 = MPU9250_WE(MPU9250_ADDR);
 int status;
 
 // Timers
@@ -164,23 +164,36 @@ void setup() {
 
     Wire.begin(21, 22);
 
-    IMU.setup(0x68);
-    if (status < 0) {
-      Serial.println("IMU initialization unsuccessful");
-      Serial.println("Check IMU wiring or try cycling power");
-      Serial.print("Status: ");
-      Serial.println(status);
-    while(1) {}
-  }
+    if(!myMPU9250.init()){
+      Serial.println("MPU9250 does not respond");
+    }
+    else{
+      Serial.println("MPU9250 is connected");
+    }
+
+    myMPU9250.autoOffsets();
+    Serial.println("Done!");
+
+    myMPU9250.setSampleRateDivider(5);
+    myMPU9250.setAccRange(MPU9250_ACC_RANGE_2G);
+
+    myMPU9250.enableAccDLPF(true);
+    myMPU9250.setAccDLPF(MPU9250_DLPF_6);
 }
 
+
+
 void loop() {
+  xyzFloat accRaw = myMPU9250.getGyrValues();
+  float pitch = myMPU9250.getPitch();
+  float roll = myMPU9250.getRoll();
+  
+  Serial.println("pitch:");
+  Serial.println(pitch);
 
-  if (IMU.update()) {
-    Serial.print(IMU.getYaw()); Serial.print(", ");
-    Serial.print(IMU.getPitch()); Serial.print(", ");
-    Serial.println(IMU.getRoll());
-  }
 
-  delay(1000);
+  Serial.println("roll:");
+  Serial.println(roll);
+  
+  delay(100);
 }
