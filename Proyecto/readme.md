@@ -22,7 +22,7 @@ Este comando instalará las librerías para el servidor web. En el archivo "inde
 ```
 // Broker IP
 const client = mqtt.connect('mqtt://192.168.0.9');
-```
+``` 
 
 Finalmente, ejecute el siguiente comando para inciar el web server:
 
