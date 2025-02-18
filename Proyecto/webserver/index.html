@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráficas en Tiempo Real</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            width: 100%;
+            height: 400px;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 30px;
+        }
+        #downloadBtn, #resetBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #downloadBtn:hover, #resetBtn:hover {
+            background-color: #45a049;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        .input-container input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gráficas en Tiempo Real</h1>
+
+    <div class="chart-container">
+        <h2>Kp</h2>
+        <canvas id="Current Kp"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Ki</h2>
+        <canvas id="Current Ki"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Kd</h2>
+        <canvas id="Current Kd"></canvas>
+    </div>
+
+    <button id="downloadBtn">Descargar Datos en CSV</button>
+    <button id="resetBtn">Reiniciar Tiempo</button>
+
+    <div class="input-container">
+        <input type="number" id="maxTime" placeholder="Max Puntos" value="20">
+    </div>
+
+    <h2>Ajuste de PID</h2>
+    <div class="input-container">
+        <label for="kp">KP:</label>
+        <input type="number" id="kp" placeholder="KP" step="0.01">
+        <label for="ki">KI:</label>
+        <input type="number" id="ki" placeholder="KI" step="0.01">
+        <label for="kd">KD:</label>
+        <input type="number" id="kd" placeholder="KD" step="0.01">
+        <button id="sendPIDBtn">Enviar PID</button>
+    </div>
+
+    <script>
+        // Configuración general
+        let time=0;
+        let kp_values = [], ki_values = [], kd_values = [];
+        let time_labels = [];
+        const bufferSize = 24;
+
+        // Establecer el tiempo máximo de los puntos
+        let timeStep = 0.005;
+        let maxTime = 20;
+        let maxDataPoints = maxTime/timeStep;
+
+        // Función para crear gráficos
+        function createChart(chartId, labels, datasets, xLabel, yLabel) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: xLabel
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: yLabel
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 0
+                    }
+                }
+            });
+        }
+
+        // Gráficas para R, L, R_U, L_U, ángulo y velocidad angular
+        const chart1 = createChart('Current Kp', [], [
+            { label: 'Kp', data: [], borderColor: 'red', borderWidth: 1, fill: false, tension: 0.1, pointRadius: 0 }
+        ], 'Tiempo (s)', 'Valor');
+
+        const chart2 = createChart('Current Ki', [], [
+            { label: 'Ki', data: [], borderColor: 'green', borderWidth: 1, fill: false, tension: 0.1, pointRadius: 0 }
+        ], 'Tiempo (s)', 'Valor');
+
+        const chart3 = createChart('Current Kd', [], [
+            { label: 'Kd', data: [], borderColor: 'blue', borderWidth: 1, fill: false, tension: 0.1, pointRadius: 0 }
+        ], 'Tiempo (s)', 'Valor');
+
+        // Función para actualizar las gráficas
+        function updateCharts() {
+            if (time >= maxTime) {
+                resetTime();
+            }
+            if (kp_values.length > maxDataPoints) {
+                kp_values.shift();
+                ki_values.shift();
+                kd_values.shift();
+                time_labels.shift();
+            }
+            // Eliminar datos que superen el tiempo máximo
+            while (time_labels[0]< time - maxTime) {
+                kp_values.shift();
+                ki_values.shift();
+                kd_values.shift();
+                time_labels.shift();
+            }
+
+            // Actualizar las gráficas
+            chart1.data.labels.push(...Array.from({ length: bufferSize }, (_, i) => time + i * timeStep));
+            chart1.data.datasets[0].data.push(...kp_values.slice(-bufferSize));
+
+            chart2.data.labels.push(...Array.from({ length: bufferSize }, (_, i) => time + i * timeStep));
+            chart2.data.datasets[0].data.push(...ki_values.slice(-bufferSize));
+
+            chart3.data.labels.push(...Array.from({ length: bufferSize }, (_, i) => time + i * timeStep));
+            chart3.data.datasets[0].data.push(...kd_values.slice(-bufferSize));
+
+            chart1.update();
+            chart2.update();
+            chart3.update();
+
+            time += bufferSize * timeStep;
+        }
+
+        // Función para procesar los datos de ambos WebSockets
+        function processData(message) {
+            time_labels.push(...Array.from({ length: bufferSize }, (_, i) => time + i * timeStep));
+            const { kp, ki, kd } = message;
+            kp_values.push(...kp);
+            ki_values.push(...ki);
+            kd_values.push(...kd);
+            updateCharts()
+        }
+
+        // WebSocket para los datos del sensor (R, L, R_U, L_U)
+        const socket1 = new WebSocket('ws://localhost:8080');
+
+        socket1.onmessage = (event) => {
+            try {
+                const message = JSON.parse(event.data);
+                processData(message);
+            } catch (e) {
+                console.error('Error al procesar los datos del WebSocket:', e);
+            }
+        };
+
+        // Función para descargar los datos en CSV
+        function downloadCSV() {
+            let csvContent = "t,kp,ki,kd\n";
+            for (let i = 0; i < kp_values.length; i++) {
+                csvContent += `${time_labels[i]},${kp_values[i]},${ki_values[i]},${kd_values[i]}\n`;
+            }
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'data.csv';
+            link.click();
+        }
+
+        // Reiniciar el tiempo y las gráficas
+        function resetTime() {
+            time = 0;
+            kp_values = [];
+            ki_values = [];
+            kd_values = [];
+            time_labels = [];
+
+            chart1.data.datasets[0].data = [];
+            chart2.data.datasets[0].data = [];
+            chart3.data.datasets[0].data = [];
+
+            chart1.update();
+            chart2.update();
+            chart3.update();
+        }
+
+
+
+        document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
+        document.getElementById('resetBtn').addEventListener('click', resetTime);
+        document.getElementById('maxTime').addEventListener('change', (e) => {
+            maxTime = parseInt(e.target.value);
+            maxDataPoints = maxTime/timeStep;
+        });
+
+        // Función para enviar los valores PID
+        function sendData() {
+            const kp = parseFloat(document.getElementById('kp').value) || 0;
+            const ki = parseFloat(document.getElementById('ki').value) || 0;
+            const kd = parseFloat(document.getElementById('kd').value) || 0;
+
+            const pidData = { "kp": kp, "ki": ki, "kd":kd };
+            fetch("http://localhost:3000/pid", {
+                method: "POST",
+                body: JSON.stringify(pidData),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8"
+                }
+            });
+        }
+
+        document.getElementById('sendPIDBtn').addEventListener('click', sendData);
+    </script>
+</body>
+</html>
