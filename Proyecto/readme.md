@@ -1,5 +1,11 @@
 # Tutorial
 
+## Broker
+Para hacer uso de MQTT, es necesario usar un broker, este es un dispositivo intermediario en la comunicación que envía y recibe los mensajes, para ello puede realizarlo en su computador con Ubuntu, u otros dispositivos como una raspberry. Puede guiarse del siguiente tutorial, (Para windows o mac tendrá que buscar otro tutorial y prober por su cuenta):
+
+[Brroker tutorial](https://www.youtube.com/watch?v=KOohvO4ngTw&ab_channel=ADTechKnow)
+
+
 ## Instalación (webserver)
 
 Para ejecutar el servidor web necesitaran instalar node.js:

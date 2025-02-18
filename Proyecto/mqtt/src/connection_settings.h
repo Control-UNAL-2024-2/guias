@@ -5,6 +5,6 @@
 #define  PORT     1883                  //1883
 
 // WiFi Network
-const char WIFI_SSID[] = "CamiloPC";             // set your WiFi network
-const char WIFI_PASSWORD[] = "19263882";    // set the password of your WiFi network
+const char WIFI_SSID[] = "lab_control";             // set your WiFi network
+const char WIFI_PASSWORD[] = "lab_control";    // set the password of your WiFi network
 
